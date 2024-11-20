@@ -29,7 +29,8 @@ func main() {
 	for {
 		fmt.Print(`What action would you like to perform?
 			1: GET /
-			2: POST /User
+			2: GET /User?123
+			3: POST /User
 			q: Exit
 		`)	
 
@@ -49,6 +50,8 @@ func main() {
 		} else if input == "1" {
 			getIndex()
 		} else if input == "2" {
+			getUserById()
+		} else if input == "3" {
 			postToUser()
 		} else {
 			fmt.Printf("Invalid input: '%s'\n", input)
@@ -57,15 +60,7 @@ func main() {
 }
 
 func postDummyDataToUser() {
-	//user := createUser("John", "test@test.com")
-	//jsonUser, err := json.Marshal(user)
-	//r := bytes.NewBuffer(jsonUser)
 	data := []byte("test")
-
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-
 
 	r, err := http.NewRequest("POST", "http://localhost:8080/User", bytes.NewBuffer(data))
 	if err != nil {
@@ -79,7 +74,6 @@ func postDummyDataToUser() {
 	}
 
 	defer res.Body.Close()
-	//resp, err := http.Post("http://localhost:8080/User", "application/json", r)
 
 	if err != nil {
 		log.Fatal(err)
@@ -107,6 +101,27 @@ func postToUser() {
 	defer resp.Body.Close()
 
 	fmt.Printf("Status: %s\n", resp.Status)
+}
+
+func getUserById() {
+	resp, err := http.Get("http://localhost:8080/User?id=123")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	data := make([]byte, 1024)
+
+	n, err := resp.Body.Read(data)
+
+	if err != nil && err.Error() != "EOF"{
+		log.Fatal(err)
+	}
+
+	defer resp.Body.Close()
+
+	fmt.Print(string(data[:n]))
+	fmt.Print("\n")
 }
 
 func getIndex() {
