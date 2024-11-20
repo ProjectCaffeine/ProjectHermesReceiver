@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+
+	//"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -54,21 +56,56 @@ func main() {
 	}
 }
 
-func postToUser() {
-	user := createUser("John", "test@test.com")
-	jsonUser, err := json.Marshal(user)
-	r := bytes.NewReader(jsonUser)
+func postDummyDataToUser() {
+	//user := createUser("John", "test@test.com")
+	//jsonUser, err := json.Marshal(user)
+	//r := bytes.NewBuffer(jsonUser)
+	data := []byte("test")
 
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+
+
+	r, err := http.NewRequest("POST", "http://localhost:8080/User", bytes.NewBuffer(data))
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
+	}
+	r.Header.Add("Content-Type", "application/json")
+	client := &http.Client{}
+	res, err := client.Do(r)
+	if err != nil {
+		panic(err)
 	}
 
-	resp, err := http.Post("http://localhost:8080/User", "json", r)
+	defer res.Body.Close()
+	//resp, err := http.Post("http://localhost:8080/User", "application/json", r)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 	
+	fmt.Printf("Status: %s\n", res.Status)
+}
+
+func postToUser() {
+	user := createUser("John", "test@test.com")
+	jsonUser, err := json.Marshal(user)
+	r := bytes.NewBuffer(jsonUser)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+
+	resp, err := http.Post("http://localhost:8080/User", "application/json", r)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	defer resp.Body.Close()
+
 	fmt.Printf("Status: %s\n", resp.Status)
 }
 
