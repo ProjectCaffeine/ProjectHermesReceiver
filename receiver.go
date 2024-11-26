@@ -3,9 +3,8 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
-
-	//"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -31,6 +30,7 @@ func main() {
 			1: GET /
 			2: GET /User?123
 			3: POST /User
+			4: POST base 64 file
 			q: Exit
 		`)	
 
@@ -53,6 +53,8 @@ func main() {
 			getUserById()
 		} else if input == "3" {
 			postToUser()
+		} else if input == "4" {
+			postFile()
 		} else {
 			fmt.Printf("Invalid input: '%s'\n", input)
 		}
@@ -80,6 +82,44 @@ func postDummyDataToUser() {
 	}
 	
 	fmt.Printf("Status: %s\n", res.Status)
+}
+
+func postFile() {
+	file, err := os.Open("./test.txt")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fileData := make([]byte, 1024)
+
+	n, err := file.Read(fileData)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("N found from file:%d\n", n)
+	fmt.Printf("length of fileData:%d\n", len(fileData))
+	fmt.Printf("filedata:%s\n", string(fileData))
+
+	base64Bytes := make([]byte, 1024)
+
+
+	
+	base64.RawStdEncoding.Encode(base64Bytes, fileData[:n + 1])
+
+	r := bytes.NewReader(base64Bytes[:base64.RawStdEncoding.EncodedLen(n)])
+
+	resp, err := http.Post("http://localhost:8080/Files", "application/json", r)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	defer resp.Body.Close()
+
+	fmt.Printf("Status: %s\n", resp.Status)
 }
 
 func postToUser() {
